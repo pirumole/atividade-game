@@ -1,0 +1,48 @@
+body {
+  position: absolute;
+  background: rgb(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+  overflow: hidden;
+}
+
+#game {
+  position: absolute;
+  width: 500px;
+  height: 300px;
+  margin: auto;
+}
+
+#game-map {
+  width: 100%;
+  height: 160px;
+  border: 1px solid #cccc;
+    background-color: #ffffff;
+}
+
+#game-log {
+  width: 100%;
+  height: 138px;
+  border: 1px solid #0988;
+  font-size: 12px;
+  overflow-y: auto;
+  background-color: #ffffff;
+}
+
+#game-level {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  opacity: 0.2;
+}
+
+#player-um {
+  border: 1px solid #000000;
+  width: 10px;
+  height: 10px;
+  -webkit-border-radius: 20px;
+  background-color: #000000;
+}
