@@ -1,6 +1,6 @@
 body {
   position: absolute;
-  background: rgb(0, 0, 0, 0.5);
+  background: rgb(0, 0, 0, 0.8);
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -9,27 +9,40 @@ body {
   overflow: hidden;
 }
 
+#body {
+}
+
 #game {
+  width: 610px;
+  height: 320px;
+  border: 1px solid #888888;
   position: absolute;
-  width: 500px;
-  height: 300px;
-  margin: auto;
+  background-color: #888888;
 }
 
 #game-map {
-  width: 100%;
-  height: 160px;
-  border: 1px solid #cccc;
-    background-color: #ffffff;
+  position: absolute;
+  width: 600px;
+  height: 200px;
+  border: 1px solid #888888;
+  top: 5px;
+  left: 4px;
+  right: 4px;
+  background-color: #000000; 
 }
 
 #game-log {
-  width: 100%;
-  height: 138px;
-  border: 1px solid #0988;
+  position: absolute;
+  bottom: 5px;
+  width: 600px;
+  height: 103px;
+  left: 4px;
+  right: 4px;
   font-size: 12px;
+  border: 1px solid #888888;
   overflow-y: auto;
-  background-color: #ffffff;
+  background-color: #000000;
+  color: green; 
 }
 
 #game-level {
@@ -37,12 +50,29 @@ body {
   top: 15px;
   right: 15px;
   opacity: 0.2;
+  color: green; 
 }
 
 #player-um {
-  border: 1px solid #000000;
+  border: 1px solid green;
   width: 10px;
   height: 10px;
   -webkit-border-radius: 20px;
-  background-color: #000000;
+  background-color: green;
+}
+
+.obstacule-top {
+  position: absolute;
+  border: 1px solid;
+  top: 0px;
+  background-color: green;
+  border: 1px green;
+}
+
+.obstacule-bottom {
+  position: absolute;
+  background-color: green;
+  border: 1px solid;
+  bottom: 0px;
+  border: 1px green;
 }

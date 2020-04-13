@@ -31,12 +31,58 @@ class NewPositionOption {
   }
 }
 
+class ObstaculePositionOption {
+  constructor() {
+    this.div = document.createElement("div");
+    this['min-width'] = new Number;
+    this['max-width'] = new Number;
+    this['min-height'] = new Number;
+    this['max-height'] = new Number;
+    this.position = {
+      local: "",
+      x: 0
+    };
+  }
+}
+
 class Util {
+  playerId = "player-um";
+  gameId = "game-map";
+  logId = "game-log";
+  bodyId = "body";
+  obstaculeClass = "obstacule";
+  intervalTime = 1000;
+  movements = [
+    // up
+    38,
+    // left
+    37,
+    // bottom
+    40,
+    // right
+    39
+  ];
+  gameStart = false;
+  gameStarted = false;
+  gameEnd = false;
+  initialInterval = null;
+
   constructor() {
     this.characters = {
       letter: "abcdefghijklmnopqrstuvxywz",
       number: "0123456789"
-    }
+    };
+    this.window = window;
+    this.document = document;
+    this.gameDiv = this.document.createElement('div');
+    this.gameLogDiv = this.document.createElement('div');
+    this.playerDiv = this.document.createElement('div');
+    this.body = this.document.getElementById(this.bodyId);
+  }
+
+  async getGameOffSet(div = this.document.createElement('div')) {
+    let { offsetWidth, offsetHeight } = div;
+    return { offsetWidth: offsetWidth, offsetHeight: offsetHeight };
   }
 
   async getEventPropertiesMove(event) {
@@ -80,7 +126,7 @@ class GameConfig extends Util {
     this.playerPosition = {
       x: 0,
       y: 0,
-      movimentPixel: 2
+      movimentPixel: 1
     };
     this.playerOffSet = {
       'top-bottom': 14,
@@ -97,6 +143,121 @@ class GameConfig extends Util {
     this.level = 1;
     this.pointLevel = 2;
     this.point = 0;
+    this.obstacules = [];
+    this.minWidthObstacule = 30;
+    this.maxWidthObstacule = 50;
+    this.minHeightObstacule = 60
+    this.maxHeightObstacule = 190;
+    this.obstaculesPosition = ["top", "bottom"];
+  }
+
+
+
+  async newObstacule() {
+    let obstacule = {
+      div: this.document.createElement("div"),
+      'min-width': this.minWidthObstacule,
+      'max-width': 0,
+      'min-height': this.minHeightObstacule,
+      'max-height': 0,
+      position: {
+        local: "",
+        x: 0
+      }
+    };
+
+    obstacule.div.id = await this.randText({ range: 30 });
+    let offsets = await Promise.all([
+      this.rand(this.minWidthObstacule, this.maxWidthObstacule),
+      this.rand(this.minHeightObstacule, this.maxHeightObstacule),
+      this.rand(1, 10)
+    ]);
+
+    obstacule['max-width'] = offsets[0];
+    obstacule['max-height'] = offsets[1];
+    obstacule['position']['local'] = this.obstaculesPosition[offsets[2] % 2];
+
+
+    obstacule.div.className += `${this.obstaculeClass}-${obstacule['position']['local']}`;
+    obstacule.div.style.width = `${obstacule['max-width']}px`;
+    obstacule.div.style.height = `${obstacule['max-height']}px`;
+    obstacule.div.style.right = `${obstacule['position']['x']}px`;
+
+    this.gameDiv.appendChild(obstacule.div);
+
+    // this.obstacules.push(obstacule);
+    await this.movementObstacule(obstacule);
+  }
+
+  validateUserPositionObstacule(obstacule = new ObstaculePositionOption) {
+    let original = {
+      x: {
+        min: 0,
+        max: 0,
+      },
+      y: {
+        min: 0,
+        max: 0,
+      }
+    }
+
+    original.x.min = (this.mapOffSet['max-width'] - (obstacule['max-width'] + obstacule['position']['x']));
+    original.x.max = (this.mapOffSet['max-width'] - (obstacule['position']['x']));
+
+    switch (obstacule['position']['local']) {
+      case "top":
+        original.y.min = 0;
+        original.y.max = this.mapOffSet["max-height"] - (this.mapOffSet["max-height"] - obstacule['max-height']);
+
+        if (
+          this.playerPosition.x + 17 > (original.x.min) &&
+          this.playerPosition.x + 2 < (original.x.max) &&
+          this.playerPosition.y <= original.y.max) {
+          return true;
+        } else {
+          return false;
+        }
+      case "bottom":
+        original.y.min = 0;
+        original.y.max = (this.mapOffSet["max-height"] - obstacule['max-height']);
+
+        if (
+          this.playerPosition.x + 17 > (original.x.min) &&
+          this.playerPosition.x + 2 < (original.x.max) &&
+          this.playerPosition.y + 16 >= original.y.max
+        ) {
+          return true
+        } else {
+          return false;
+        }
+    }
+  }
+
+  movementObstacule(obstacule = new ObstaculePositionOption) {
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        if (this.gameEnd) return true;
+
+        if (this.validateUserPositionObstacule(obstacule)) {
+          this.gameEnd = true;
+          return true;
+        }
+
+        if (obstacule.position.x + obstacule['max-width'] > this.mapOffSet['max-width'] - 6) {
+          obstacule['max-width'] -= this.playerPosition.movimentPixel + 1;
+          obstacule.div.style.width = `${obstacule['max-width']}px`;
+          if (obstacule['max-width'] <= 5) {
+            this.gameDiv.removeChild(obstacule.div);
+            return true;
+          }
+          resolve(await this.movementObstacule(obstacule));
+        } else {
+          obstacule['position']['x'] += this.playerPosition.movimentPixel + 1;
+          obstacule.div.style.right = `${obstacule['position']['x']}px`;
+          resolve(await this.movementObstacule(obstacule));
+        }
+      }, 50);
+    });
   }
 
   async setNewLevel() {
@@ -112,7 +273,7 @@ class GameConfig extends Util {
         this.level += 1;
         this.pointLevel += 2;
         this.point += this.pointLevel;
-        this.playerPosition.movimentPixel = 4;
+        this.playerPosition.movimentPixel = 2;
         this.levelDiv.innerText = `Pointer ${this.point} Level ${this.level}`;
         this.writeLog({ message: `Level ${this.level}` });
         return true;
@@ -120,7 +281,7 @@ class GameConfig extends Util {
         this.level += 1;
         this.pointLevel += 2;
         this.point += this.pointLevel;
-        this.playerPosition.movimentPixel = 6;
+        this.playerPosition.movimentPixel = 3;
         this.levelDiv.innerText = `Pointer ${this.point} Level ${this.level}`;
         this.writeLog({ message: `Level ${this.level}` });
         return true;
@@ -128,7 +289,7 @@ class GameConfig extends Util {
         this.level += 1;
         this.pointLevel += 2;
         this.point += this.pointLevel;
-        this.playerPosition.movimentPixel = 8;
+        this.playerPosition.movimentPixel = 4;
         this.levelDiv.innerText = `Pointer ${this.point} Level ${this.level}`;
         this.writeLog({ message: `Level ${this.level}` });
         return true;
@@ -136,7 +297,7 @@ class GameConfig extends Util {
         this.level += 1;
         this.pointLevel += 2;
         this.point += this.pointLevel;
-        this.playerPosition.movimentPixel = 10;
+        this.playerPosition.movimentPixel = 5;
         this.levelDiv.innerText = `Pointer ${this.point} Level ${this.level}`;
         this.writeLog({ message: `Level ${this.level}` });
         return true;
@@ -162,33 +323,7 @@ class GameConfig extends Util {
 }
 
 class Config extends GameConfig {
-  playerId = "player-um";
-  gameId = "game-map";
-  logId = "game-log";
-  bodyId = "body";
-  intervalTime = 1000;
-  movements = [
-    // up
-    38,
-    // left
-    37,
-    // bottom
-    40,
-    // right
-    39
-  ];
-  gameStart = false;
-  initialInterval = null;
-
-  constructor() {
-    super();
-    this.window = window;
-    this.document = document;
-    this.gameDiv = this.document.createElement('div');
-    this.gameLogDiv = this.document.createElement('div');
-    this.playerDiv = this.document.createElement('div');
-    this.body = this.document.getElementById(this.bodyId);
-  }
+  constructor() { super(); }
 
   async setElement(elementName) {
     switch (elementName) {
@@ -229,13 +364,8 @@ class Config extends GameConfig {
     this.writeLog({ message: "press enter to start" });
   }
 
-  async getGameOffSet() {
-    let { offsetWidth, offsetHeight } = this.gameDiv;
-    return { offsetWidth: offsetWidth, offsetHeight: offsetHeight };
-  }
-
   async setPlayer() {
-    let offset = await this.getGameOffSet();
+    let offset = await this.getGameOffSet(this.gameDiv);
     this.mapOffSet['max-width'] = offset.offsetWidth;
     this.mapOffSet['max-height'] = offset.offsetHeight;
 
@@ -254,6 +384,7 @@ class Controller extends Config {
   constructor() { super(); }
 
   async start() {
+    this.gameStarted = true;
     await this.setElement('game');
     await this.setPlayer();
   }
@@ -264,6 +395,7 @@ class Controller extends Config {
       new: `player new position (x @x, y @y)`
     };
 
+    if (this.gameEnd) return true;
     switch (option['event-code']) {
       // up
       case 38:
@@ -357,13 +489,23 @@ class Game extends MyEvent {
     this.setInitialSize();
     this.initialInterval = setInterval(() => {
       if (this.gameStart) {
-        clearInterval(this.initialInterval);
-        this.start();
+        if (!this.gameStarted) {
+          this.start();
+        }
       }
+      if (this.gameEnd)
+        return true;
     }, 100);
     setInterval(async () => {
       if (this.gameStart)
-        await this.setNewLevel();
+        if (!this.gameEnd)
+          this.newObstacule();
+
+    }, (this.intervalTime * 10) / 2);
+    setInterval(async () => {
+      if (this.gameStart)
+        if (!this.gameEnd)
+          await this.setNewLevel();
     }, this.intervalTime);
     await this.renderLog();
   }
