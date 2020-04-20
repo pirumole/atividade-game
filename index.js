@@ -451,7 +451,6 @@ class Controller extends Config {
   }
 }
 
-
 class MyEvent extends Controller {
   constructor() {
     super();
@@ -481,9 +480,7 @@ class MyEvent extends Controller {
 }
 
 class Game extends MyEvent {
-  constructor() {
-    super();
-  }
+  constructor() { super(); }
 
   async run() {
     this.setInitialSize();
@@ -510,7 +507,6 @@ class Game extends MyEvent {
     await this.renderLog();
   }
 }
-
 
 window.onload = function () {
   (new Game).run();
