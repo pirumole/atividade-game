@@ -463,6 +463,7 @@ class MyEvent extends Controller {
   async onEvent(event) {
     let control = await this.getEventPropertiesMove(event);
 
+    control['']
     if (control['event-code'] == 13 && !this.gameStart) {
       this.writeLog({ message: "Game started" });
       return (this.gameStart = true);
@@ -484,6 +485,7 @@ class Game extends MyEvent {
 
   async run() {
     this.setInitialSize();
+
     this.initialInterval = setInterval(() => {
       if (this.gameStart) {
         if (!this.gameStarted) {
@@ -511,7 +513,3 @@ class Game extends MyEvent {
 window.onload = function () {
   (new Game).run();
 }
-
-
-
-
